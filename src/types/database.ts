@@ -229,7 +229,7 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
-  image?: string;
+  image_url?: string;
   category: string;
   inStock: boolean;
   stockQuantity?: number;
