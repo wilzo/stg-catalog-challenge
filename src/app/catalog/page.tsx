@@ -228,7 +228,7 @@ export default function MarketplaceCatalog() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-in fade-in duration-500">
       <Header
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -240,14 +240,16 @@ export default function MarketplaceCatalog() {
       />
 
       {!showProductDetail && (
-        <FilterPanel
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          showFilters={showFilters}
-          onToggleFilters={() => setShowFilters(!showFilters)}
-          resultsCount={getFilteredProducts().length}
-        />
+        <div className="animate-in slide-in-from-top duration-500">
+          <FilterPanel
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            resultsCount={getFilteredProducts().length}
+          />
+        </div>
       )}
 
       {notification.show && (
@@ -271,14 +273,16 @@ export default function MarketplaceCatalog() {
       )}
 
       {showProductDetail && selectedProduct ? (
-        <ProductDetailView
-          product={convertToProductType(selectedProduct)}
-          onBack={handleBackToProducts}
-          onAddToCart={handleAddToCartForDetailView}
-        />
+        <div className="animate-in fade-in duration-500">
+          <ProductDetailView
+            product={convertToProductType(selectedProduct)}
+            onBack={handleBackToProducts}
+            onAddToCart={handleAddToCartForDetailView}
+          />
+        </div>
       ) : (
         <main className="container mx-auto px-4 py-8">
-          <div className="mb-8">
+          <div className="mb-8 animate-in slide-in-from-left duration-700">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Produtos em Destaque
             </h2>
@@ -298,31 +302,38 @@ export default function MarketplaceCatalog() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {getPaginatedProducts().map((product) => (
-                  <ProductCard
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in slide-in-from-bottom duration-700 delay-200">
+                {getPaginatedProducts().map((product, index) => (
+                  <div
                     key={product.id}
-                    product={product}
-                    isAddingToCart={addingToCart === product.id}
-                    onProductClick={handleProductClick}
-                    onAddToCart={handleAddToCart}
-                  />
+                    className="animate-in scale-in duration-500"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <ProductCard
+                      product={product}
+                      isAddingToCart={addingToCart === product.id}
+                      onProductClick={handleProductClick}
+                      onAddToCart={handleAddToCart}
+                    />
+                  </div>
                 ))}
               </div>
 
               {/* Paginação */}
               {getTotalPages() > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={getTotalPages()}
-                  onPageChange={handlePageChange}
-                />
+                <div className="animate-in slide-in-from-bottom duration-500 delay-300">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={getTotalPages()}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
               )}
             </>
           )}
 
           {!isLoading && getFilteredProducts().length === 0 && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 animate-in zoom-in duration-700">
               <div className="text-gray-400 mb-4">
                 <Search className="h-16 w-16 mx-auto" />
               </div>

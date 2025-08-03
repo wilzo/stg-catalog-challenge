@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ShoppingBag, MessageCircle } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import CustomButton from "@/components/CustomButton";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import CartItem from "@/components/CartItem";
 import CouponSection from "@/components/CouponSection";
 import OrderSummary from "@/components/OrderSummary";
@@ -148,40 +149,6 @@ export default function CartPage() {
     return calculateSubtotal() + calculateShipping() - calculateDiscount();
   };
 
-  const generateWhatsAppMessage = () => {
-    const items = cartItems
-      .map(
-        (item) =>
-          `• ${item.productName} - Qtd: ${item.quantity} - ${formatPrice(
-            item.productPrice * item.quantity
-          )}`
-      )
-      .join("\n");
-
-    const message = `🛒 *Pedido TechMarket*\n\n${items}\n\n*Resumo:*\nSubtotal: ${formatPrice(
-      calculateSubtotal()
-    )}\nFrete: ${
-      calculateShipping() === 0 ? "GRÁTIS" : formatPrice(calculateShipping())
-    }\n${
-      appliedCoupon
-        ? `Desconto (${appliedCoupon.code}): -${formatPrice(
-            calculateDiscount()
-          )}\n`
-        : ""
-    }*Total: ${formatPrice(
-      calculateTotal()
-    )}*\n\nGostaria de finalizar este pedido! 😊`;
-
-    return encodeURIComponent(message);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(price);
-  };
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -202,10 +169,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 animate-in fade-in duration-500">
       {/* Notification */}
       {notification.show && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm">
+        <div className="fixed top-4 right-4 z-50 max-w-sm animate-in slide-in-from-right duration-300">
           <div
             className={`p-4 rounded-lg shadow-lg ${
               notification.type === "success"
@@ -219,21 +186,19 @@ export default function CartPage() {
       )}
 
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-8 animate-in slide-in-from-left duration-500">
           <CustomButton
             variant="ghost"
             onClick={() => router.push("/catalog")}
             icon={<ArrowLeft className="h-4 w-4" />}
-            className="mb-4"
+            className="mb-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
           >
             Continuar Comprando
           </CustomButton>
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Carrinho de Compras
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Meu Carrinho</h1>
               <p className="text-gray-600 mt-1">
                 {itemCount} {itemCount === 1 ? "item" : "itens"} no carrinho
               </p>
@@ -242,7 +207,7 @@ export default function CartPage() {
         </div>
 
         {cartItems.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-16 animate-in zoom-in duration-700">
             <ShoppingBag className="w-24 h-24 text-gray-400 mx-auto mb-6" />
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               Seu carrinho está vazio
@@ -256,26 +221,31 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {cartItems.map((item) => (
-                <CartItem
+            <div className="lg:col-span-2 space-y-4 animate-in slide-in-from-left duration-700">
+              {cartItems.map((item, index) => (
+                <div
                   key={item.id}
-                  item={{
-                    ...item,
-                    categoryName:
-                      item.categoryName === null
-                        ? undefined
-                        : item.categoryName,
-                  }}
-                  onUpdateQuantity={handleQuantityChange}
-                  onRemoveItem={handleRemoveItem}
-                  isUpdating={updatingItems.has(item.id)}
-                  isRemoving={removingItems.has(item.id)}
-                />
+                  className="animate-in slide-in-from-bottom duration-500"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CartItem
+                    item={{
+                      ...item,
+                      categoryName:
+                        item.categoryName === null
+                          ? undefined
+                          : item.categoryName,
+                    }}
+                    onUpdateQuantity={handleQuantityChange}
+                    onRemoveItem={handleRemoveItem}
+                    isUpdating={updatingItems.has(item.id)}
+                    isRemoving={removingItems.has(item.id)}
+                  />
+                </div>
               ))}
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in slide-in-from-right duration-700 delay-200">
               <CouponSection
                 couponCode={couponCode}
                 onCouponCodeChange={setCouponCode}
@@ -294,19 +264,22 @@ export default function CartPage() {
                 appliedCoupon={appliedCoupon}
               />
 
-              <CustomButton
-                className="w-full py-3 text-lg"
-                onClick={() => {
-                  const message = generateWhatsAppMessage();
-                  window.open(
-                    `https://wa.me/5511999999999?text=${message}`,
-                    "_blank"
-                  );
-                }}
-                icon={<MessageCircle className="h-5 w-5" />}
-              >
-                Finalizar no WhatsApp
-              </CustomButton>
+              <div className="space-y-3 animate-in slide-in-from-bottom duration-500 delay-300">
+                <CustomButton
+                  className="w-full py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 transform hover:scale-[1.02]"
+                  onClick={() => router.push("/catalog")}
+                >
+                  Voltar ao Catálogo
+                </CustomButton>
+
+                <WhatsAppButton
+                  onClick={() => router.push("/checkout")}
+                  className="w-full py-3 text-lg"
+                  variant="primary"
+                >
+                  Finalizar via WhatsApp
+                </WhatsAppButton>
+              </div>
             </div>
           </div>
         )}
