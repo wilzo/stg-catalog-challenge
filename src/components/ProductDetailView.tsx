@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   ShoppingCart,
   Heart,
-  Star,
   Truck,
   Shield,
   RotateCcw,
@@ -23,10 +22,8 @@ interface ProductDetailViewProps {
   product: Product;
   onBack: () => void;
   onAddToCart: (product: Product, quantity: number) => Promise<boolean>;
-  onToggleFavorite: (productId: number) => Promise<void>;
-  onRateProduct: (productId: number, rating: number) => Promise<void>;
-  isFavorited: boolean;
-  userRating?: number;
+  onToggleFavorite?: (productId: number) => Promise<void>;
+  isFavorited?: boolean;
 }
 
 export default function ProductDetailView({
@@ -34,15 +31,11 @@ export default function ProductDetailView({
   onBack,
   onAddToCart,
   onToggleFavorite,
-  onRateProduct,
   isFavorited,
-  userRating = 0,
 }: ProductDetailViewProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [currentUserRating, setCurrentUserRating] = useState(userRating);
-  const [hoveredRating, setHoveredRating] = useState(0);
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
@@ -51,11 +44,6 @@ export default function ProductDetailView({
     } finally {
       setIsAddingToCart(false);
     }
-  };
-
-  const handleRating = async (rating: number) => {
-    setCurrentUserRating(rating);
-    await onRateProduct(product.id, rating);
   };
 
   const formatPrice = (price: number) => {
@@ -120,7 +108,7 @@ export default function ProductDetailView({
                 variant="ghost"
                 size="sm"
                 className="absolute top-4 right-4 w-10 h-10 p-0 bg-white/80 hover:bg-white/90 rounded-full shadow-sm"
-                onClick={() => onToggleFavorite(product.id)}
+                onClick={() => onToggleFavorite?.(product.id)}
               >
                 <Heart
                   className={`h-5 w-5 transition-colors ${
@@ -160,28 +148,11 @@ export default function ProductDetailView({
 
           {/* Product Information */}
           <div className="space-y-6 animate-in slide-in-from-right duration-700">
-            {/* Category and Rating */}
+            {/* Category */}
             <div className="flex items-center justify-between">
               <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                 {product.category}
               </Badge>
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-4 w-4 ${
-                        star <= Math.floor(product.rating || 0)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">
-                  {product.rating || 0} ({product.ratingCount || 0} avaliações)
-                </span>
-              </div>
             </div>
 
             {/* Product Name */}
@@ -215,37 +186,6 @@ export default function ProductDetailView({
               >
                 {product.inStock ? "Em estoque" : "Fora de estoque"}
               </span>
-            </div>
-
-            {/* User Rating */}
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900">Sua avaliação:</h4>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => handleRating(star)}
-                    onMouseEnter={() => setHoveredRating(star)}
-                    onMouseLeave={() => setHoveredRating(0)}
-                    className="transition-colors"
-                  >
-                    <Star
-                      className={`h-6 w-6 ${
-                        star <= (hoveredRating || currentUserRating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300 hover:text-yellow-300"
-                      }`}
-                    />
-                  </button>
-                ))}
-                <span className="ml-2 text-sm text-gray-600">
-                  {currentUserRating > 0
-                    ? `${currentUserRating} estrela${
-                        currentUserRating > 1 ? "s" : ""
-                      }`
-                    : "Clique para avaliar"}
-                </span>
-              </div>
             </div>
 
             {/* Quantity Selector */}

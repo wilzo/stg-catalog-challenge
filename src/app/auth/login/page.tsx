@@ -4,9 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Eye, EyeOff, Mail, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -18,7 +31,10 @@ interface FormErrors {
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -52,18 +68,21 @@ export default function LoginPage() {
     if (Object.keys(newErrors).length === 0) {
       try {
         await signIn(loginForm.email, loginForm.password);
-        setMessage({ type: "success", text: "Login realizado com sucesso! Redirecionando..." });
+        setMessage({
+          type: "success",
+          text: "Login realizado com sucesso! Redirecionando...",
+        });
         setTimeout(() => {
           router.push("/catalog");
         }, 1500);
       } catch (error) {
-        setMessage({ 
-          type: "error", 
-          text: error instanceof Error ? error.message : "Erro ao fazer login" 
+        setMessage({
+          type: "error",
+          text: error instanceof Error ? error.message : "Erro ao fazer login",
         });
       }
     }
-    
+
     setLoading(false);
   };
 
@@ -80,7 +99,6 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Success/Error Messages */}
           {message && (
             <div
               className={`p-4 rounded-lg flex items-center gap-3 ${
@@ -100,7 +118,10 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="login-email" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="login-email"
+                className="text-sm font-medium text-gray-700"
+              >
                 Email
               </Label>
               <div className="relative">
@@ -110,9 +131,13 @@ export default function LoginPage() {
                   type="email"
                   placeholder="seu@email.com"
                   value={loginForm.email}
-                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setLoginForm({ ...loginForm, email: e.target.value })
+                  }
                   className={`pl-10 h-12 ${
-                    errors.email ? "border-red-500 focus:border-red-500" : "focus:border-blue-500"
+                    errors.email
+                      ? "border-red-500 focus:border-red-500"
+                      : "focus:border-blue-500"
                   }`}
                 />
               </div>
@@ -125,7 +150,10 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="login-password" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="login-password"
+                className="text-sm font-medium text-gray-700"
+              >
                 Senha
               </Label>
               <div className="relative">
@@ -135,9 +163,13 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={loginForm.password}
-                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  onChange={(e) =>
+                    setLoginForm({ ...loginForm, password: e.target.value })
+                  }
                   className={`pl-10 pr-10 h-12 ${
-                    errors.password ? "border-red-500 focus:border-red-500" : "focus:border-blue-500"
+                    errors.password
+                      ? "border-red-500 focus:border-red-500"
+                      : "focus:border-blue-500"
                   }`}
                 />
                 <Button
@@ -163,7 +195,10 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Button variant="link" className="text-sm text-blue-600 hover:text-blue-800 p-0">
+              <Button
+                variant="link"
+                className="text-sm text-blue-600 hover:text-blue-800 p-0"
+              >
                 Esqueceu sua senha?
               </Button>
             </div>

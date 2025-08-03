@@ -1,16 +1,17 @@
-# 🛒 STG Catalog Challenge
+# 🛒 Wilson Market
 
 ## Sobre o Projeto
 
-Sistema completo de e-commerce desenvolvido para o desafio técnico da **STG Company**. Uma aplicação full-stack que oferece autenticação de usuários, catálogo de produtos, carrinho de compras e integração com WhatsApp para finalização de pedidos.
+Sistema completo de e-commerce moderno e responsivo. Uma aplicação full-stack que oferece autenticação segura de usuários, catálogo de produtos com paginação, carrinho de compras inteligente, gerenciamento de imagens e integração com WhatsApp para finalização de pedidos.
 
-### 🎯 Objetivos
+### 🎯 Principais Funcionalidades
 
-- Demonstrar habilidades em desenvolvimento TypeScript/React
-- Integrar autenticação e banco de dados com Supabase
-- Criar interface responsiva e moderna
-- Implementar fluxo completo de e-commerce
-- Utilizar IA para acelerar o desenvolvimento
+- **Catálogo de Produtos**: Navegação otimizada com paginação (12 produtos por página)
+- **Sistema de Busca**: Busca em tempo real com debounce para performance
+- **Carrinho Inteligente**: Adição/remoção de produtos com persistência no banco
+- **Upload de Imagens**: Sistema seguro para gerenciar imagens dos produtos
+- **Autenticação Robusta**: Login seguro com políticas RLS do Supabase
+- **Interface Responsiva**: Design moderno que funciona em todos os dispositivos
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -19,7 +20,15 @@ Sistema completo de e-commerce desenvolvido para o desafio técnico da **STG Com
 - **Next.js 15** - Framework React com App Router
 - **TypeScript** - Tipagem estática para JavaScript
 - **Tailwind CSS** - Framework CSS utilitário para estilização
-- **Supabase** - Backend-as-a-Service para autenticação e database
+- **Supabase** - Backend-as-a-Service completo
+
+### Funcionalidades Avançadas
+
+- **Paginação Inteligente** - Máximo 12 produtos por página para otimizar carregamento
+- **Upload de Imagens** - Sistema de batch save para gerenciar imagens dos produtos
+- **RLS (Row Level Security)** - Segurança avançada no nível de linha do banco
+- **Autenticação Contextual** - Controle de acesso baseado em usuários específicos
+- **Interface de Perfil** - Dropdown com opções de perfil e logout
 
 ### Bibliotecas e Ferramentas
 
@@ -27,6 +36,36 @@ Sistema completo de e-commerce desenvolvido para o desafio técnico da **STG Com
 - **Lucide React** - Biblioteca de ícones moderna e consistente
 - **Context API** - Gerenciamento de estado global nativo do React
 - **ESLint** - Linting e formatação de código
+
+## 📱 Funcionalidades Detalhadas
+
+### 🛍️ Catálogo de Produtos
+
+- Visualização paginada (12 produtos por página)
+- Busca em tempo real com debounce
+- Carregamento otimizado com skeletons
+- Navegação fluida entre páginas
+
+### 🖼️ Gerenciamento de Imagens
+
+- **Upload Seguro**: Apenas usuários autenticados podem fazer upload
+- **Sistema de Batch**: Alterações ficam pendentes até serem salvas
+- **Interface Intuitiva**: Visual feedback para alterações pendentes
+- **Persistência Garantida**: Imagens são salvas permanentemente no banco
+
+### 🔐 Segurança e Autenticação
+
+- **Login Obrigatório**: Acesso controlado às funcionalidades críticas
+- **RLS Policies**: Segurança no nível do banco de dados
+- **Sessões Seguras**: Gerenciamento de sessão com Supabase Auth
+- **Perfil de Usuário**: Interface para gerenciar conta e logout
+
+### 🛒 Carrinho de Compras
+
+- Adição/remoção em tempo real
+- Persistência entre sessões
+- Cálculo automático de totais
+- Interface responsiva e intuitiva
 
 ## 🤖 IA Utilizada
 
@@ -56,7 +95,7 @@ Sistema completo de e-commerce desenvolvido para o desafio técnico da **STG Com
 
 ```bash
 git clone <url-do-repositorio>
-cd stg-catalog-challenge
+cd wilson-market
 ```
 
 2. **Instale as dependências**
@@ -67,21 +106,126 @@ npm install
 
 3. **Configure as variáveis de ambiente**
 
-```bash
-# Copie o arquivo de exemplo
-cp .env.example .env.local
+Crie um arquivo `.env.local` na raiz do projeto:
 
-# Configure suas variáveis no .env.local
+```env
 NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima_supabase
-NEXT_PUBLIC_WHATSAPP_NUMBER=5511999999999
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_publica_do_supabase
 ```
 
-4. **Execute o projeto**
+4. **Configure o banco de dados**
+
+Execute os scripts SQL no Supabase SQL Editor para criar as tabelas e políticas:
+
+```sql
+-- Configurar RLS para tabela products
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+-- Política para leitura pública
+CREATE POLICY "products_select_policy" ON products
+  FOR SELECT TO public USING (true);
+
+-- Política para updates apenas usuários autenticados
+CREATE POLICY "products_update_policy" ON products
+  FOR UPDATE TO authenticated
+  USING (true) WITH CHECK (true);
+```
+
+5. **Execute o projeto**
 
 ```bash
 npm run dev
 ```
+
+6. **Acesse o sistema**
+
+- **Catálogo**: `http://localhost:3000/catalog`
+- **Upload de Imagens**: `http://localhost:3000/upload-images`
+- **Login**: Será redirecionado automaticamente se necessário
+
+## 📁 Estrutura de Arquivos
+
+```
+src/
+├── app/
+│   ├── auth/          # Páginas de autenticação
+│   ├── catalog/       # Catálogo principal com paginação
+│   ├── cart/          # Carrinho de compras
+│   └── upload-images/ # Gerenciamento de imagens (protegido)
+├── components/
+│   ├── Header.tsx           # Cabeçalho com perfil dropdown
+│   ├── Pagination.tsx       # Componente de paginação
+│   ├── ImageUpload.tsx      # Upload de imagens
+│   ├── ImageUploadAuth.tsx  # Autenticação para upload
+│   └── ProductDetailView.tsx # Detalhes do produto (sem avaliações)
+├── context/
+│   ├── AuthContext.tsx      # Contexto de autenticação
+│   └── CartContext.tsx      # Contexto do carrinho
+└── lib/
+    ├── supabase-helpers.ts  # Funções do banco
+    └── upload-images.ts     # Helpers para upload
+```
+
+## 🔐 Credenciais de Acesso
+
+### Upload de Imagens
+
+- **Email**: `admin@ecommerce.local`
+- **Senha**: `admin123456`
+
+_As credenciais são criadas automaticamente na primeira tentativa de login._
+
+## 🎨 Melhorias Implementadas
+
+### ✨ Atualizações Recentes
+
+- **🏪 Rebranding**: Mudança de nome para "Wilson Market"
+- **📄 Paginação**: Catálogo limitado a 12 produtos por página
+- **👤 Menu de Perfil**: Dropdown com "Meu Perfil" e opções de logout
+- **🖼️ Upload Seguro**: Sistema de autenticação para upload de imagens
+- **⭐ Limpeza de Interface**: Remoção do sistema de avaliações
+- **🔒 Segurança RLS**: Políticas avançadas de segurança no banco
+
+### 🚀 Performance
+
+- **Debounce na Busca**: Evita requisições excessivas
+- **Loading States**: Feedback visual durante carregamentos
+- **Paginação Otimizada**: Carrega apenas os produtos necessários
+- **Lazy Loading**: Imagens carregadas sob demanda
+
+## 🛡️ Segurança
+
+- **Row Level Security (RLS)**: Controle de acesso no nível do banco
+- **Autenticação Obrigatória**: Funções críticas protegidas
+- **Validação de Sessão**: Verificação contínua de autenticação
+- **Sanitização de Dados**: Prevenção de ataques XSS e SQL injection
+
+## 📱 Responsividade
+
+- **Mobile First**: Design otimizado para dispositivos móveis
+- **Grid Responsivo**: Layout adapta automaticamente ao tamanho da tela
+- **Touch Friendly**: Botões e elementos otimizados para toque
+- **Performance Mobile**: Carregamento otimizado para conexões lentas
+
+## 🔧 Scripts Disponíveis
+
+```bash
+npm run dev      # Inicia servidor de desenvolvimento
+npm run build    # Cria build de produção
+npm run start    # Inicia servidor de produção
+npm run lint     # Executa linting do código
+```
+
+## 📞 Suporte
+
+Para dúvidas ou sugestões:
+
+- **Email**: contato@wilsonmarket.com
+- **GitHub Issues**: Abra uma issue no repositório
+
+---
+
+**Wilson Market** - Sua loja de tecnologia de confiança 🛒✨
 
 5. **Acesse a aplicação**
    Abra [http://localhost:3000](http://localhost:3000) no seu navegador

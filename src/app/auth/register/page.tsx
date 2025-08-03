@@ -142,7 +142,6 @@ export default function RegisterPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Success/Error Messages */}
           {message && (
             <div
               className={`p-4 rounded-lg flex items-center gap-3 ${

@@ -41,6 +41,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           full_name: session.user.user_metadata?.full_name,
           created_at: session.user.created_at,
         });
+
+        // Limpar localStorage quando usuário logar para evitar conflitos de ID
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("temp_cart_items");
+        }
       } else {
         setUser(null);
       }

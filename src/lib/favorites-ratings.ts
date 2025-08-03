@@ -1,16 +1,7 @@
-// =========================================
-// FUNÇÕES PARA FAVORITOS E AVALIAÇÕES
-// =========================================
-
 import { supabase } from "./supabase-helpers";
-
-// =========================================
-// FUNÇÕES PARA FAVORITOS
-// =========================================
 
 export async function toggleFavorite(userId: string, productId: number) {
   try {
-    // Verificar se já está favoritado
     const { data: existingFavorite } = await supabase
       .from("favorites")
       .select("*")
@@ -19,7 +10,6 @@ export async function toggleFavorite(userId: string, productId: number) {
       .single();
 
     if (existingFavorite) {
-      // Remover dos favoritos
       const { error } = await supabase
         .from("favorites")
         .delete()
@@ -33,7 +23,6 @@ export async function toggleFavorite(userId: string, productId: number) {
 
       return { data: false, error: null };
     } else {
-      // Adicionar aos favoritos
       const { error } = await supabase.from("favorites").insert({
         user_id: userId,
         product_id: productId,
@@ -92,10 +81,6 @@ export async function isFavorited(userId: string, productId: number) {
   }
 }
 
-// =========================================
-// FUNÇÕES PARA AVALIAÇÕES
-// =========================================
-
 export async function rateProduct(
   userId: string,
   productId: number,
@@ -104,7 +89,6 @@ export async function rateProduct(
   console.log("🎯 rateProduct chamada:", { userId, productId, rating });
 
   try {
-    // Verificar se já avaliou
     const { data: existingRating } = await supabase
       .from("ratings")
       .select("*")
@@ -115,7 +99,6 @@ export async function rateProduct(
     console.log("📊 Avaliação existente:", existingRating);
 
     if (existingRating) {
-      // Atualizar avaliação existente
       const { error } = await supabase
         .from("ratings")
         .update({ rating })
@@ -128,7 +111,6 @@ export async function rateProduct(
       }
       console.log("✅ Avaliação atualizada com sucesso");
     } else {
-      // Criar nova avaliação
       const { error } = await supabase.from("ratings").insert({
         user_id: userId,
         product_id: productId,
@@ -142,7 +124,6 @@ export async function rateProduct(
       console.log("✅ Nova avaliação criada com sucesso");
     }
 
-    // Atualizar rating médio do produto
     console.log("🔄 Atualizando rating médio do produto...");
     await updateProductRating(productId);
 
@@ -176,7 +157,6 @@ async function updateProductRating(productId: number) {
   console.log("📊 updateProductRating chamada para produto:", productId);
 
   try {
-    // Calcular nova média
     const { data: ratings } = await supabase
       .from("ratings")
       .select("rating")
@@ -191,11 +171,10 @@ async function updateProductRating(productId: number) {
 
       console.log("📊 Nova média calculada:", { average, count });
 
-      // Atualizar produto
       const { error } = await supabase
         .from("products")
         .update({
-          rating: Math.round(average * 10) / 10, // Arredondar para 1 casa decimal
+          rating: Math.round(average * 10) / 10,
           rating_count: count,
         })
         .eq("id", productId);

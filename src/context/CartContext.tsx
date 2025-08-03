@@ -67,6 +67,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Carregar carrinho quando usuário logar
   useEffect(() => {
     if (user?.id) {
+      // Limpar localStorage para evitar conflitos com IDs antigos
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("temp_cart_items");
+      }
       refreshCart();
     } else {
       setCartSummary(null);
@@ -86,6 +90,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
+      console.log("🛒 Adicionando item ao carrinho via Supabase:", {
+        productId: product.id,
+        quantity,
+        userId: user.id,
+      });
+
       const { error: addError } = await addToCartDb(
         user.id,
         product.id,
@@ -94,16 +104,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (addError) {
         setError(addError);
-        console.error("Erro ao adicionar ao carrinho:", addError);
+        console.error("❌ Erro ao adicionar ao carrinho:", addError);
         return false;
       }
 
+      console.log("✅ Item adicionado, atualizando carrinho...");
       await refreshCart();
+      console.log("✅ Carrinho atualizado com sucesso");
       return true;
     } catch (err) {
-      const errorMessage = "Erro ao adicionar produto ao carrinho";
+      const errorMessage = "Erro ao adicionar ao carrinho";
       setError(errorMessage);
-      console.error(errorMessage, err);
+      console.error("❌", errorMessage, err);
       return false;
     } finally {
       setLoading(false);
@@ -147,8 +159,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = async (cartItemId: number): Promise<boolean> => {
+    console.log("🗑️ INÍCIO removeItem:", { cartItemId, userId: user?.id });
+
     if (!user?.id) {
       setError("Usuário não logado");
+      console.log("❌ Usuário não logado");
       return false;
     }
 
@@ -156,20 +171,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
+      console.log("🔄 Chamando removeFromCartDb...");
       const { error: removeError } = await removeFromCartDb(cartItemId);
 
       if (removeError) {
         setError(removeError);
-        console.error("Erro ao remover item:", removeError);
+        console.error("❌ Erro ao remover item:", removeError);
         return false;
       }
 
+      console.log("✅ Item removido, atualizando carrinho...");
       await refreshCart();
+      console.log("✅ Carrinho atualizado com sucesso");
       return true;
     } catch (err) {
       const errorMessage = "Erro ao remover item do carrinho";
       setError(errorMessage);
-      console.error(errorMessage, err);
+      console.error("❌", errorMessage, err);
       return false;
     } finally {
       setLoading(false);
@@ -207,7 +225,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   // Propriedades para compatibilidade
-  const itemCount = cartSummary?.totalItems || 0;
+  // Contar itens únicos (número de produtos diferentes) em vez de quantidade total
+  const itemCount = cartSummary?.items?.length || 0;
   const total = cartSummary?.totalAmount || 0;
   const items = cartSummary?.items || [];
 

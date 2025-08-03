@@ -1,4 +1,4 @@
-import { createClient } from "./supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import {
   Database,
   Product,
@@ -8,20 +8,22 @@ import {
   CartSummary,
 } from "@/types/database";
 
-export const supabase = createClient();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export async function getProducts(filters?: ProductFilters) {
   try {
     let query = supabase
       .from("products")
-      .select("id, name, price, image_url, description, featured, created_at")
+      .select("*")
       .order("featured", { ascending: false })
       .order("created_at", { ascending: false });
 
-    // Remover filtro por categoria já que a coluna não existe
-    // if (filters?.category) {
-    //   query = query.eq("category", filters.category);
-    // }
+    if (filters?.category) {
+      query = query.eq("category", filters.category);
+    }
 
     if (filters?.search) {
       query = query.or(
@@ -103,121 +105,23 @@ export async function getCategories() {
   }
 }
 
-export async function getUniqueProductCategories() {
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("category")
-      .order("category");
-
-    if (error) {
-      console.error("Erro ao buscar categorias únicas:", error);
-      return { data: [], error: error.message };
-    }
-
-    // Extrair categorias únicas
-    const uniqueCategories = [...new Set(data?.map((item) => item.category))];
-    return { data: uniqueCategories, error: null };
-  } catch (error) {
-    console.error("Erro ao buscar categorias únicas:", error);
-    return {
-      data: [],
-      error: error instanceof Error ? error.message : "Erro desconhecido",
-    };
-  }
-}
-
 export async function getCartSummary(userId: string): Promise<{
   data: CartSummary | null;
   error: string | null;
 }> {
   try {
-    console.log("🛒 Buscando resumo do carrinho para usuário:", userId);
-
-    // Buscar itens do carrinho com detalhes dos produtos
-    const { data: cartItems, error: cartError } = await supabase
-      .from("cart_items")
-      .select(
-        `
-        id,
-        user_id,
-        product_id,
-        quantity,
-        created_at,
-        updated_at,
-        products (
-          id,
-          name,
-          price,
-          image_url
-        )
-      `
-      )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (cartError) {
-      console.error("❌ Erro ao buscar itens do carrinho:", cartError);
-      return { data: null, error: cartError.message };
-    }
-
-    if (!cartItems || cartItems.length === 0) {
-      console.log("📦 Carrinho vazio");
-      return {
-        data: {
-          items: [],
-          totalItems: 0,
-          totalAmount: 0,
-        },
-        error: null,
-      };
-    }
-
-    // Mapear os dados para o formato CartSummary
-    const mappedItems = cartItems.map((item) => {
-      const product = Array.isArray(item.products)
-        ? item.products[0]
-        : item.products;
-      return {
-        id: item.id,
-        userId: item.user_id,
-        productId: item.product_id,
-        productName: product?.name || "Produto",
-        productPrice: product?.price || 0,
-        imageUrl: product?.image_url || "",
-        quantity: item.quantity,
-        categoryName: "Produto", // Valor fixo já que não temos categoria na tabela
-        subtotal: (product?.price || 0) * item.quantity,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-      };
+    const { data, error } = await supabase.rpc("get_cart_summary", {
+      p_user_id: userId,
     });
 
-    const totalItems = mappedItems.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
-    const totalAmount = mappedItems.reduce(
-      (sum, item) => sum + item.subtotal,
-      0
-    );
+    if (error) {
+      console.error("Erro ao buscar resumo do carrinho:", error);
+      return { data: null, error: error.message };
+    }
 
-    console.log("✅ Resumo do carrinho:", {
-      totalItems,
-      totalAmount,
-      itemsCount: mappedItems.length,
-    });
-
-    return {
-      data: {
-        items: mappedItems,
-        totalItems,
-        totalAmount,
-      },
-      error: null,
-    };
+    return { data, error: null };
   } catch (error) {
-    console.error("❌ Erro ao buscar resumo do carrinho:", error);
+    console.error("Erro ao buscar resumo do carrinho:", error);
     return {
       data: null,
       error: error instanceof Error ? error.message : "Erro desconhecido",
@@ -316,18 +220,6 @@ export async function addToCart(
 ) {
   try {
     console.log("🛒 Iniciando addToCart:", { userId, productId, quantity });
-
-    // Verificar se o usuário está autenticado
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-    if (sessionError || !session) {
-      console.error("❌ Sessão não encontrada:", sessionError);
-      return { data: null, error: "Usuário não autenticado" };
-    }
-
-    console.log("✅ Sessão encontrada:", { userId: session.user.id });
 
     // Verificar se o produto existe
     console.log("🔍 Verificando produto...");
