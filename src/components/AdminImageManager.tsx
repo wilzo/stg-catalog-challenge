@@ -6,16 +6,10 @@ import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 
 interface AdminImageManagerProps {
-  productId: number;
-  productName: string;
-  currentImageUrl: string;
   onImageUpdate: () => void;
 }
 
 export default function AdminImageManager({
-  productId,
-  productName,
-  currentImageUrl,
   onImageUpdate,
 }: AdminImageManagerProps) {
   const [showUpload, setShowUpload] = useState(false);

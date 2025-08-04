@@ -345,8 +345,6 @@ export default function UploadImagesPage() {
                 </div>
 
                 <ImageUpload
-                  productId={product.id}
-                  productName={product.name}
                   currentImageUrl={product.image_url}
                   onUploadComplete={(newImageUrl) =>
                     handleImageUpdate(product.id, newImageUrl)

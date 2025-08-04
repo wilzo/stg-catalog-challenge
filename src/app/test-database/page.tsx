@@ -60,7 +60,7 @@ export default function TestDatabase() {
                   alt={product.name}
                   fill
                   className="object-cover"
-                  onError={(e) => {
+                  onError={() => {
                     console.log("Erro ao carregar imagem:", product.image_url);
                   }}
                 />
