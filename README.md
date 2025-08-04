@@ -102,7 +102,7 @@ O projeto inclui páginas de teste para desenvolvimento e debug:
 
 ## 🤖 IA Utilizada no Desenvolvimento
 
-### GitHub Copilot + Claude Sonnet 3.5
+### GitHub Copilot + Claude Sonnet 4.0
 
 - **Assistente Principal**: GitHub Copilot integrado ao VS Code com modelo Claude Sonnet 3.5
 - **Como ajudou**: Acelerou significativamente o desenvolvimento de componentes React, configurações do Supabase, lógica de autenticação e validações de formulário
@@ -345,7 +345,7 @@ Para dúvidas ou sugestões:
 
 ## 🔗 Links
 
-- **Deploy**: [Em breve - Vercel]
+- **Deploy**: https://stg-catalog-challenge-plhg.vercel.app/
 - **Repositório**: [GitHub - stg-catalog-challenge]
 - **Supabase Project**: [Configuração em desenvolvimento]
 
