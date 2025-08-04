@@ -1,20 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Trash2, Plus,              <CustomButton
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (item.quantity <= 1) {
-                    onRemoveItem(item.id);
-                  } else {
-                    onUpdateQuantity(item.id, item.quantity - 1);
-                  }
-                }}
-                disabled={isUpdating || isRemoving}
-                className="h-8 w-8 p-0 rounded-none border-0 hover:bg-gray-100"
-              >
-                <Minus className="h-3 w-3 text-gray-700" />
-              </CustomButton>oader2 } from "lucide-react";
+import { Trash2, Plus, Minus, Loader2 } from "lucide-react";
 import CustomButton from "./CustomButton";
 
 interface CartItemProps {
@@ -75,7 +61,9 @@ export const CartItem: React.FC<CartItemProps> = ({
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900">Quantidade:</span>
+            <span className="text-sm font-medium text-gray-900">
+              Quantidade:
+            </span>
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
               <CustomButton
                 variant="ghost"
@@ -86,7 +74,7 @@ export const CartItem: React.FC<CartItemProps> = ({
               >
                 <Minus className="h-3 w-3 text-gray-700" />
               </CustomButton>
-              
+
               <span className="px-3 py-1 bg-gray-50 text-sm font-medium text-gray-900 min-w-[40px] text-center">
                 {isUpdating ? (
                   <Loader2 className="h-3 w-3 animate-spin mx-auto" />
@@ -94,7 +82,7 @@ export const CartItem: React.FC<CartItemProps> = ({
                   item.quantity
                 )}
               </span>
-              
+
               <CustomButton
                 variant="ghost"
                 size="sm"
@@ -114,7 +102,7 @@ export const CartItem: React.FC<CartItemProps> = ({
                 {formatPrice(item.subtotal)}
               </p>
             </div>
-            
+
             <CustomButton
               variant="ghost"
               size="sm"

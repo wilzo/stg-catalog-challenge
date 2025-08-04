@@ -14,14 +14,15 @@ export async function getProducts(filters?: ProductFilters) {
   try {
     let query = supabase
       .from("products")
-      .select("id, name, price, image_url, description, featured, created_at")
+      .select(
+        "id, name, price, image_url, description, featured, created_at, category_name"
+      )
       .order("featured", { ascending: false })
       .order("created_at", { ascending: false });
 
-    // Remover filtro por categoria já que a coluna não existe
-    // if (filters?.category) {
-    //   query = query.eq("category", filters.category);
-    // }
+    if (filters?.category) {
+      query = query.eq("category_name", filters.category);
+    }
 
     if (filters?.search) {
       query = query.or(
@@ -107,16 +108,15 @@ export async function getUniqueProductCategories() {
   try {
     const { data, error } = await supabase
       .from("products")
-      .select("category")
-      .order("category");
+      .select("category_name")
+      .order("category_name");
 
     if (error) {
       console.error("Erro ao buscar categorias únicas:", error);
       return { data: [], error: error.message };
     }
 
-    // Extrair categorias únicas
-    const uniqueCategories = [...new Set(data?.map((item) => item.category))];
+    const uniqueCategories = [...new Set(data?.map((item) => item.category_name))];
     return { data: uniqueCategories, error: null };
   } catch (error) {
     console.error("Erro ao buscar categorias únicas:", error);
@@ -134,7 +134,6 @@ export async function getCartSummary(userId: string): Promise<{
   try {
     console.log("🛒 Buscando resumo do carrinho para usuário:", userId);
 
-    // Buscar itens do carrinho com detalhes dos produtos
     const { data: cartItems, error: cartError } = await supabase
       .from("cart_items")
       .select(
@@ -173,7 +172,6 @@ export async function getCartSummary(userId: string): Promise<{
       };
     }
 
-    // Mapear os dados para o formato CartSummary
     const mappedItems = cartItems.map((item) => {
       const product = Array.isArray(item.products)
         ? item.products[0]
@@ -186,7 +184,7 @@ export async function getCartSummary(userId: string): Promise<{
         productPrice: product?.price || 0,
         imageUrl: product?.image_url || "",
         quantity: item.quantity,
-        categoryName: "Produto", // Valor fixo já que não temos categoria na tabela
+        categoryName: "Produto",
         subtotal: (product?.price || 0) * item.quantity,
         createdAt: item.created_at,
         updatedAt: item.updated_at,

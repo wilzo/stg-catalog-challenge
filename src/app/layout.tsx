@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "STG Catalog - E-commerce Challenge",
+  title: "Wilson Market - Sua loja de tecnologia",
   description:
-    "Sistema completo de catálogo de produtos com autenticação e integração WhatsApp",
+    "Sistema completo de e-commerce com catálogo de produtos, carrinho de compras e integração WhatsApp",
 };
 
 export default function RootLayout({

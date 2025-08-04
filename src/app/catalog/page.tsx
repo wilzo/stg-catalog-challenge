@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
 import { Check, Search, Mail, Phone, MapPin } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +14,7 @@ import ProductCard from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
 import { LoadingSpinner, ProductSkeleton } from "@/components/LoadingSpinner";
 import { getProducts } from "@/lib/supabase-helpers";
+import { getUniqueProductCategories } from "@/lib/supabase-helpers";
 import { Product as ProductType } from "@/types/database";
 
 interface Product {
@@ -58,10 +60,9 @@ export default function MarketplaceCatalog() {
       setIsLoading(true);
 
       try {
-        // Carregar produtos com paginação
         const { data: productsData, error: productsError } = await getProducts({
           search: searchTerm || undefined,
-          // category: selectedCategory !== "all" ? selectedCategory : undefined, // Removido porque não existe na tabela
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
         });
 
         if (productsError) {
@@ -74,21 +75,21 @@ export default function MarketplaceCatalog() {
             image_url:
               product.image_url ||
               "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-            category: "Eletrônicos", // Valor fixo já que não temos categoria na tabela
-            inStock: true, // Sempre em estoque
+            category: product.category_name || "Sem Categoria",
+            inStock: true,
           }));
           setProducts(convertedProducts);
           setTotalProducts(convertedProducts.length);
         }
 
-        // Definir categorias fixas já que não temos no banco
-        const fixedCategories = [
-          "Eletrônicos",
-          "Acessórios",
-          "Casa",
-          "Esporte",
-        ];
-        setCategories(fixedCategories);
+        const { data: categoriesData, error: categoriesError } = await getUniqueProductCategories();
+        
+        if (categoriesError) {
+          console.error("Erro ao carregar categorias:", categoriesError);
+          setCategories(["Eletrônicos", "Acessórios", "Casa", "Esporte"]);
+        } else {
+          setCategories(categoriesData || []);
+        }
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       } finally {
@@ -121,7 +122,7 @@ export default function MarketplaceCatalog() {
     price: product.price,
     image_url: product.image_url,
     category: product.category,
-    inStock: true, // Sempre em estoque
+    inStock: true,
     description: undefined,
     stockQuantity: undefined,
     featured: undefined,
@@ -131,7 +132,7 @@ export default function MarketplaceCatalog() {
     product: ProductType,
     quantity: number
   ): Promise<boolean> => {
-    if (!user) return false; // Remover verificação de estoque
+    if (!user) return false;
 
     try {
       await addItem(product, quantity);
@@ -160,7 +161,7 @@ export default function MarketplaceCatalog() {
         price: product.price,
         image_url: product.image_url,
         category: product.category,
-        inStock: true, // Sempre em estoque
+        inStock: true,
       };
 
       const success = await addItem(productData, 1);
@@ -191,7 +192,6 @@ export default function MarketplaceCatalog() {
   const getFilteredProducts = () => {
     let filtered = products;
 
-    // Aplicar filtro de busca
     if (searchTerm.trim()) {
       filtered = filtered.filter(
         (product) =>
@@ -200,7 +200,6 @@ export default function MarketplaceCatalog() {
       );
     }
 
-    // Aplicar filtro de categoria
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
         (product) => product.category === selectedCategory
@@ -237,6 +236,7 @@ export default function MarketplaceCatalog() {
         cartItemCount={itemCount}
         onLogout={handleLogout}
         onCartClick={() => router.push("/cart")}
+        onProfileClick={() => router.push("/profile")}
       />
 
       {!showProductDetail && (

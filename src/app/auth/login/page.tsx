@@ -87,9 +87,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0">
-        <CardHeader className="space-y-1 text-center pb-6">
+    <div className="min-h-screen  bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-10 relative">
+      <div className="absolute top-6 right-6 "></div>
+
+      <Card className="w-full max-w-lg shadow-2xl border-0 bg-white">
+        <CardHeader className="space-y-1 text-center pb-8 px-8">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
             Entrar
           </CardTitle>
@@ -98,7 +100,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8 px-8 pb-8">
           {message && (
             <div
               className={`p-4 rounded-lg flex items-center gap-3 ${
@@ -116,7 +118,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label
                 htmlFor="login-email"
@@ -134,7 +136,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setLoginForm({ ...loginForm, email: e.target.value })
                   }
-                  className={`pl-10 h-12 ${
+                  className={`pl-10 h-12 bg-white border-gray-300 text-gray-900 placeholder-gray-500 ${
                     errors.email
                       ? "border-red-500 focus:border-red-500"
                       : "focus:border-blue-500"
@@ -166,7 +168,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setLoginForm({ ...loginForm, password: e.target.value })
                   }
-                  className={`pl-10 pr-10 h-12 ${
+                  className={`pl-10 pr-10 h-12 bg-white border-gray-300 text-gray-900 placeholder-gray-500 ${
                     errors.password
                       ? "border-red-500 focus:border-red-500"
                       : "focus:border-blue-500"
@@ -194,13 +196,12 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <Button
-                variant="link"
-                className="text-sm text-blue-600 hover:text-blue-800 p-0"
-              >
-                Esqueceu sua senha?
-              </Button>
+            <div className="flex items-center justify-end">
+              <Link href="/auth/reset-password" tabIndex={-1}>
+                <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline">
+                  Esqueceu sua senha?
+                </span>
+              </Link>
             </div>
 
             <Button
@@ -212,7 +213,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="text-center pt-4 border-t border-gray-200">
+          <div className="text-center pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600">
               Não tem uma conta?{" "}
               <Link

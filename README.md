@@ -10,6 +10,7 @@ Sistema completo de e-commerce moderno e responsivo. Uma aplicação full-stack 
 - **Sistema de Busca**: Busca em tempo real com debounce para performance
 - **Carrinho Inteligente**: Adição/remoção de produtos com persistência no banco
 - **Checkout Completo**: Tela de confirmação de pedidos com integração WhatsApp
+- **Perfil de Usuário**: Gerenciamento completo de perfil e histórico de pedidos
 - **Upload de Imagens**: Sistema seguro para gerenciar imagens dos produtos
 - **Autenticação Robusta**: Login seguro com políticas RLS do Supabase
 - **Interface Responsiva**: Design moderno que funciona em todos os dispositivos
@@ -54,6 +55,19 @@ Sistema completo de e-commerce moderno e responsivo. Uma aplicação full-stack 
 - **Sistema de Batch**: Alterações ficam pendentes até serem salvas
 - **Interface Intuitiva**: Visual feedback para alterações pendentes
 - **Persistência Garantida**: Imagens são salvas permanentemente no banco
+- **Rota Protegida**: Acesso via `/upload-images` apenas para usuários logados
+- **Validação de Arquivos**: Sistema verifica formato e tamanho das imagens
+
+### 🧪 Páginas de Teste e Desenvolvimento
+
+O projeto inclui páginas de teste para desenvolvimento e debug:
+
+- **`/test-database`**: Testa conexão e operações do banco de dados
+- **`/test-supabase`**: Verifica configurações e políticas do Supabase
+- **`/test-images`**: Testa sistema de upload e manipulação de imagens
+- **`/test-card-images`**: Valida exibição de imagens nos cards de produtos
+
+**Nota**: Essas páginas são para desenvolvimento/debug e podem ser removidas em produção, mas demonstram a metodologia de testes durante o desenvolvimento.
 
 ### 🔐 Segurança e Autenticação
 
@@ -78,19 +92,52 @@ Sistema completo de e-commerce moderno e responsivo. Uma aplicação full-stack 
 - **Animações Fluidas**: Feedback visual durante todo o processo de checkout
 - **Segurança Total**: Todos os dados são validados antes do envio
 
-## 🤖 IA Utilizada
+### 👤 Perfil e Histórico
 
-### GitHub Copilot
+- **Perfil Completo**: Visualização e edição de dados pessoais
+- **Histórico de Pedidos**: Visualização de todos os pedidos enviados via WhatsApp
+- **Modal de Detalhes**: Visualização completa de cada pedido
+- **Busca de Pedidos**: Encontre rapidamente pedidos específicos
+- **Informações Adicionais**: Telefone, localização e data de cadastro
 
-- **Como ajudou**: Acelerou significativamente a criação de componentes React, configurações do Supabase e lógica de autenticação
-- **Partes geradas**: Estrutura inicial dos contextos, tipagem TypeScript, e configurações de middleware
-- **Partes manuais**: Arquitetura do projeto, integração WhatsApp e lógica de negócio específica
+## 🤖 IA Utilizada no Desenvolvimento
 
-### Estratégia de Desenvolvimento
+### GitHub Copilot + Claude Sonnet 3.5
 
-- Uso de prompts específicos para gerar código TypeScript bem tipado
-- Aproveitamento do Copilot para criar boilerplate de componentes React
-- Revisão manual de todo código gerado para garantir qualidade e segurança
+- **Assistente Principal**: GitHub Copilot integrado ao VS Code com modelo Claude Sonnet 3.5
+- **Como ajudou**: Acelerou significativamente o desenvolvimento de componentes React, configurações do Supabase, lógica de autenticação e validações de formulário
+- **Partes geradas com IA**:
+  - Estrutura inicial dos contextos (AuthContext, CartContext)
+  - Tipagem TypeScript complexa para integração com Supabase
+  - Configurações de middleware e proteção de rotas
+  - Validações de formulário e tratamento de erros
+  - Helpers para manipulação de dados do banco
+- **Desenvolvimento Manual**:
+  - Arquitetura geral do projeto
+  - Lógica de negócio específica do e-commerce
+  - Integração personalizada com WhatsApp
+  - Design de interface e experiência do usuário
+  - Componentes utilizados.
+
+### V0.dev para Layout e Design
+
+- **Ferramenta**: V0.dev (Vercel) para geração de componentes de interface
+- **Como foi usado**: Criação de layouts iniciais e estruturas de componentes
+- **Prompts utilizados**: Prompts específicos gerados pelo ChatGPT para criar interfaces modernas e responsivas
+- **Customização**: Todos os componentes foram adaptados e personalizados para as necessidades específicas do projeto
+
+### ChatGPT para Prompts e Estratégia
+
+- **Uso**: Geração de prompts otimizados para o V0.dev e GitHub Copilot
+- **Estratégia**: Criação de prompts específicos para gerar código TypeScript bem tipado
+- **Planejamento**: Auxiliou na estruturação da arquitetura do projeto
+
+### Abordagem de Desenvolvimento
+
+- **Componentes Próprios**: Todos os componentes foram desenvolvidos do zero, sem bibliotecas de UI externas
+- **Aproveitamento de IA**: Uso inteligente de ferramentas de IA para acelerar desenvolvimento mantendo qualidade
+- **Revisão Manual**: Todo código gerado por IA foi revisado, testado e adaptado para garantir qualidade e segurança
+- **Iteração Contínua**: Processo iterativo de geração, teste e refinamento com assistência da IA
 
 ## 🏗️ Como Rodar o Projeto
 
@@ -150,11 +197,47 @@ npm run dev
 
 6. **Acesse o sistema**
 
+**Páginas Principais:**
+
 - **Catálogo**: `http://localhost:3000/catalog`
 - **Carrinho**: `http://localhost:3000/cart`
 - **Checkout**: `http://localhost:3000/checkout`
+- **Perfil**: `http://localhost:3000/profile`
 - **Upload de Imagens**: `http://localhost:3000/upload-images`
-- **Login**: Será redirecionado automaticamente se necessário
+
+**Páginas de Teste/Debug (para desenvolvimento):**
+
+- **Teste Database**: `http://localhost:3000/test-database`
+- **Teste Supabase**: `http://localhost:3000/test-supabase`
+- **Teste Images**: `http://localhost:3000/test-images`
+- **Teste Card Images**: `http://localhost:3000/test-card-images`
+
+**Nota**: O login será solicitado automaticamente se necessário
+
+## 🔧 Metodologia de Desenvolvimento
+
+### 🧪 Approach Test-Driven
+
+Durante o desenvolvimento, foram criadas páginas específicas para testar cada funcionalidade:
+
+- **Testes de Banco**: Validação de conexões e operações CRUD
+- **Testes de Upload**: Verificação do sistema de imagens
+- **Testes de Interface**: Validação de componentes visuais
+- **Debug em Tempo Real**: Páginas que mostram estado atual do sistema
+
+### 🔄 Processo Iterativo
+
+1. **Desenvolvimento com IA**: Uso do GitHub Copilot para acelerar criação
+2. **Teste Imediato**: Páginas de teste para validar funcionalidades
+3. **Refinamento Manual**: Ajustes e melhorias baseados nos testes
+4. **Integração**: Combinação de todas as partes testadas
+
+### 🎯 Qualidade de Código
+
+- **TypeScript Strict**: Tipagem rigorosa em todo o projeto
+- **ESLint**: Linting automático para consistência
+- **Componentes Reutilizáveis**: Arquitetura modular e escalável
+- **Context API**: Gerenciamento de estado centralizado e eficiente
 
 ## 📁 Estrutura de Arquivos
 
@@ -165,11 +248,20 @@ src/
 │   ├── catalog/       # Catálogo principal com paginação
 │   ├── cart/          # Carrinho de compras
 │   ├── checkout/      # Tela de finalização e confirmação
-│   └── upload-images/ # Gerenciamento de imagens (protegido)
+│   ├── profile/       # Perfil do usuário e histórico de pedidos
+│   │   └── orders/    # Página com todos os pedidos
+│   ├── upload-images/ # Gerenciamento de imagens (protegido)
+│   ├── test-database/ # 🧪 Teste de conexão com banco
+│   ├── test-supabase/ # 🧪 Teste de configurações Supabase
+│   ├── test-images/   # 🧪 Teste de sistema de upload
+│   └── test-card-images/ # 🧪 Teste de exibição de imagens
 ├── components/
 │   ├── Header.tsx           # Cabeçalho com perfil dropdown
 │   ├── Pagination.tsx       # Componente de paginação
 │   ├── WhatsAppButton.tsx   # Botão reutilizável para WhatsApp
+│   ├── OrderHistory.tsx     # Histórico de pedidos recentes
+│   ├── OrderModal.tsx       # Modal para visualizar pedidos
+│   ├── EditProfileModal.tsx # Modal para editar perfil
 │   ├── ImageUpload.tsx      # Upload de imagens
 │   ├── ImageUploadAuth.tsx  # Autenticação para upload
 │   └── ProductDetailView.tsx # Detalhes do produto (sem avaliações)
@@ -203,6 +295,9 @@ _As credenciais são criadas automaticamente na primeira tentativa de login._
 - **🎨 Animações Suaves**: Transições elegantes entre páginas e componentes
 - **🛒 Checkout Completo**: Nova tela de finalização com integração WhatsApp
 - **📱 Componentes Reutilizáveis**: WhatsAppButton e outros componentes modulares
+- **👤 Sistema de Perfil**: Gerenciamento completo de perfil do usuário
+- **📋 Histórico de Pedidos**: Visualização e busca de pedidos anteriores
+- **🔧 Modais Interativos**: Edição de perfil e visualização de pedidos
 
 ### 🚀 Performance
 
@@ -238,12 +333,12 @@ npm run lint     # Executa linting do código
 
 Para dúvidas ou sugestões:
 
-- **Email**: contato@wilsonmarket.com
+- **Email**: wilson.hernandesjunior@gmail.com
 - **GitHub Issues**: Abra uma issue no repositório
 
 ---
 
-**Wilson Market** - Sua loja de tecnologia de confiança 🛒✨
+**Wilson Market** - Desafio gerado para a STG
 
 5. **Acesse a aplicação**
    Abra [http://localhost:3000](http://localhost:3000) no seu navegador
@@ -253,50 +348,6 @@ Para dúvidas ou sugestões:
 - **Deploy**: [Em breve - Vercel]
 - **Repositório**: [GitHub - stg-catalog-challenge]
 - **Supabase Project**: [Configuração em desenvolvimento]
-
-## ✅ Funcionalidades
-
-### Obrigatórias ✅
-
-- [x] Sistema de autenticação (login/registro)
-- [x] Proteção de rotas com middleware
-- [x] Catálogo de produtos responsivo
-- [x] Busca e filtros por produtos
-- [x] Carrinho de compras funcional
-- [x] Integração WhatsApp para finalização
-- [x] Design responsivo (mobile/desktop)
-- [x] TypeScript em todo o projeto
-
-### Em Desenvolvimento 🚧
-
-- [ ] Página de login/registro
-- [ ] Componentes do catálogo
-- [ ] Modal de detalhes do produto
-- [ ] Interface do carrinho
-- [ ] Página de confirmação
-- [ ] População do banco com produtos
-- [ ] Deploy na Vercel
-
-### Diferenciais (Futuros) ⭐
-
-- [ ] Dark mode toggle
-- [ ] Histórico de pedidos
-- [ ] Sistema de cupons
-- [ ] PWA (Progressive Web App)
-- [ ] Testes unitários
-
-## 📱 Estrutura do Projeto
-
-```
-src/
-├── app/                    # App Router (Next.js 15)
-├── components/            # Componentes React reutilizáveis
-├── context/              # Context API (Auth, Cart)
-├── lib/                  # Utilitários e configurações
-│   ├── supabase/        # Configuração do Supabase
-│   └── utils.ts         # Funções utilitárias
-└── types/               # Definições TypeScript
-```
 
 ## 👨‍💻 Desenvolvedor
 
@@ -309,9 +360,3 @@ src/
 ---
 
 _Projeto desenvolvido para o desafio técnico da STG Company - Agosto 2025_
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

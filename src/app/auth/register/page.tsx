@@ -120,8 +120,8 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0">
-        <CardHeader className="space-y-1 text-center pb-6">
+      <Card className="w-full max-w-lg shadow-2xl border-0">
+        <CardHeader className="space-y-1 text-center pb-8 px-8">
           <div className="flex items-center justify-center gap-2">
             <Link href="/auth/login">
               <Button
@@ -141,7 +141,7 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8 px-8 pb-8">
           {message && (
             <div
               className={`p-4 rounded-lg flex items-center gap-3 ${
@@ -159,7 +159,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label
                 htmlFor="register-name"

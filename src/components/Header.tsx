@@ -18,6 +18,7 @@ interface HeaderProps {
   cartItemCount: number;
   onLogout: () => void;
   onCartClick: () => void;
+  onProfileClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   cartItemCount,
   onLogout,
   onCartClick,
+  onProfileClick,
 }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -89,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     onClick={() => {
                       setShowProfileMenu(false);
-                      // Aqui você pode adicionar navegação para perfil
+                      onProfileClick?.();
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                   >

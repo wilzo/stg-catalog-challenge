@@ -8,19 +8,7 @@ import {
   CartSummary,
 } from "@/types/database";
 
-const supabaseUrlexport async function addToCart(
-  userId: string,
-  productId: number,
-  quantity: number = 1
-) {
-  try {
-    console.log('🛒 Iniciando addToCart:', { userId, productId, quantity });
-    
-    // Pular verificação de autenticação - deixar o RLS do Supabase cuidar da segurança
-    // O problema está na verificação manual de auth.getUser()
-    
-    // Verificar se o produto existe
-    console.log('🔍 Verificando produto...');_PUBLIC_SUPABASE_URL!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
@@ -217,19 +205,26 @@ export async function addToCart(
   quantity: number = 1
 ) {
   try {
-    console.log('🛒 Iniciando addToCart:', { userId, productId, quantity });
-    
+    console.log("🛒 Iniciando addToCart:", { userId, productId, quantity });
+
     // Verificar se o usuário está autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    console.log('� Usuário autenticado:', user?.id, 'Target userId:', userId);
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    console.log("� Usuário autenticado:", user?.id, "Target userId:", userId);
+
     if (authError || !user || user.id !== userId) {
-      console.error('❌ Problema de autenticação:', { authError, user: user?.id, userId });
+      console.error("❌ Problema de autenticação:", {
+        authError,
+        user: user?.id,
+        userId,
+      });
       return { data: null, error: "Usuário não autenticado corretamente" };
     }
 
     // Verificar se o produto existe
-    console.log('🔍 Verificando produto...');
+    console.log("🔍 Verificando produto...");
     const { data: product, error: productError } = await supabase
       .from("products")
       .select("id, name")
@@ -238,7 +233,10 @@ export async function addToCart(
 
     if (productError) {
       console.error("❌ Erro ao verificar produto:", productError);
-      return { data: null, error: `Erro ao verificar produto: ${productError.message}` };
+      return {
+        data: null,
+        error: `Erro ao verificar produto: ${productError.message}`,
+      };
     }
 
     if (!product) {
@@ -246,10 +244,10 @@ export async function addToCart(
       return { data: null, error: "Produto não encontrado" };
     }
 
-    console.log('✅ Produto encontrado:', product);
+    console.log("✅ Produto encontrado:", product);
 
     // Primeiro, tentar fazer um SELECT simples para testar acesso
-    console.log('🔍 Testando acesso à tabela cart_items...');
+    console.log("🔍 Testando acesso à tabela cart_items...");
     const { data: testAccess, error: accessError } = await supabase
       .from("cart_items")
       .select("id")
@@ -258,19 +256,25 @@ export async function addToCart(
 
     if (accessError) {
       console.error("❌ Erro de acesso à tabela cart_items:", accessError);
-      if (accessError.code === 'PGRST116') {
+      if (accessError.code === "PGRST116") {
         return { data: null, error: "Tabela cart_items não encontrada" };
       }
-      if (accessError.code === '42501') {
-        return { data: null, error: "Erro de permissão RLS na tabela cart_items" };
+      if (accessError.code === "42501") {
+        return {
+          data: null,
+          error: "Erro de permissão RLS na tabela cart_items",
+        };
       }
       return { data: null, error: `Erro de acesso: ${accessError.message}` };
     }
 
-    console.log('✅ Acesso à tabela OK, dados encontrados:', testAccess?.length || 0);
+    console.log(
+      "✅ Acesso à tabela OK, dados encontrados:",
+      testAccess?.length || 0
+    );
 
     // Verificar se o item já existe no carrinho
-    console.log('🔍 Verificando item existente...');
+    console.log("🔍 Verificando item existente...");
     const { data: existingItem, error: selectError } = await supabase
       .from("cart_items")
       .select("*")
@@ -280,19 +284,25 @@ export async function addToCart(
 
     if (selectError) {
       console.error("❌ Erro ao verificar item existente:", selectError);
-      return { data: null, error: `Erro ao verificar item: ${selectError.message}` };
+      return {
+        data: null,
+        error: `Erro ao verificar item: ${selectError.message}`,
+      };
     }
 
-    console.log('🔍 Item existente:', existingItem ? 'Encontrado' : 'Não encontrado');
+    console.log(
+      "🔍 Item existente:",
+      existingItem ? "Encontrado" : "Não encontrado"
+    );
 
     if (existingItem) {
-      console.log('📦 Atualizando quantidade existente...');
+      console.log("📦 Atualizando quantidade existente...");
       const newQuantity = existingItem.quantity + quantity;
       const { data, error } = await supabase
         .from("cart_items")
-        .update({ 
+        .update({
           quantity: newQuantity,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("id", existingItem.id)
         .select()
@@ -303,10 +313,10 @@ export async function addToCart(
         return { data: null, error: `Erro ao atualizar: ${error.message}` };
       }
 
-      console.log('✅ Quantidade atualizada com sucesso:', data);
+      console.log("✅ Quantidade atualizada com sucesso:", data);
       return { data, error: null };
     } else {
-      console.log('🆕 Inserindo novo item...');
+      console.log("🆕 Inserindo novo item...");
       const { data, error } = await supabase
         .from("cart_items")
         .insert({
@@ -323,19 +333,20 @@ export async function addToCart(
           code: error.code,
           message: error.message,
           details: error.details,
-          hint: error.hint
+          hint: error.hint,
         });
         return { data: null, error: `Erro ao adicionar: ${error.message}` };
       }
 
-      console.log('✅ Item adicionado com sucesso:', data);
+      console.log("✅ Item adicionado com sucesso:", data);
       return { data, error: null };
     }
   } catch (error) {
     console.error("❌ Erro geral ao adicionar ao carrinho:", error);
-    return { 
-      data: null, 
-      error: error instanceof Error ? error.message : "Erro interno do servidor" 
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : "Erro interno do servidor",
     };
   }
 }

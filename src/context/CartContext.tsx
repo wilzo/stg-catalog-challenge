@@ -29,7 +29,7 @@ interface CartContextType {
   refreshCart: () => Promise<void>;
   itemCount: number;
   total: number;
-  items: CartSummary["items"]; // Para compatibilidade com código existente
+  items: CartSummary["items"];
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -64,10 +64,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [user?.id]);
 
-  // Carregar carrinho quando usuário logar
   useEffect(() => {
     if (user?.id) {
-      // Limpar localStorage para evitar conflitos com IDs antigos
       if (typeof window !== "undefined") {
         localStorage.removeItem("temp_cart_items");
       }
@@ -224,8 +222,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Propriedades para compatibilidade
-  // Contar itens únicos (número de produtos diferentes) em vez de quantidade total
   const itemCount = cartSummary?.items?.length || 0;
   const total = cartSummary?.totalAmount || 0;
   const items = cartSummary?.items || [];

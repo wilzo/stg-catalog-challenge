@@ -25,7 +25,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
+    <div className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -39,12 +39,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
             {selectedCategory !== "all" && (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">
-                  Categoria:
-                </span>
+                <span className="text-sm text-gray-600">Categoria:</span>
                 <Badge
                   variant="secondary"
-                  className="bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 border border-blue-200 font-medium"
+                  className="bg-blue-100 text-blue-700 cursor-pointer hover:bg-blue-200"
                   onClick={() => onCategoryChange("all")}
                 >
                   {selectedCategory}
@@ -54,13 +52,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             )}
           </div>
 
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm text-gray-600">
             {resultsCount} produtos encontrados
           </span>
         </div>
 
         {showFilters && (
-          <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {getUniqueCategories().map((category) => (
                 <CustomButton
@@ -70,7 +68,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   }
                   size="sm"
                   onClick={() => onCategoryChange(category)}
-                  className="text-xs"
+                  className={`text-xs ${
+                    selectedCategory === category
+                      ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
+                      : "hover:bg-gray-100"
+                  }`}
                 >
                   {category === "all" ? "Todos" : category}
                 </CustomButton>

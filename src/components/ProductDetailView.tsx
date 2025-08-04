@@ -7,7 +7,6 @@ import ProductImage from "@/components/ProductImageSimple";
 import {
   ArrowLeft,
   ShoppingCart,
-  Heart,
   Truck,
   Shield,
   RotateCcw,
@@ -22,16 +21,12 @@ interface ProductDetailViewProps {
   product: Product;
   onBack: () => void;
   onAddToCart: (product: Product, quantity: number) => Promise<boolean>;
-  onToggleFavorite?: (productId: number) => Promise<void>;
-  isFavorited?: boolean;
 }
 
 export default function ProductDetailView({
   product,
   onBack,
   onAddToCart,
-  onToggleFavorite,
-  isFavorited,
 }: ProductDetailViewProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -53,7 +48,6 @@ export default function ProductDetailView({
     }).format(price);
   };
 
-  // Mock data para demonstração - em produção viriam do banco
   const mockImages = [
     product.image_url,
     product.image_url,
@@ -78,9 +72,9 @@ export default function ProductDetailView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-white animate-in fade-in duration-500">
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
+        {}
         <Button
           onClick={onBack}
           variant="outline"
@@ -103,21 +97,6 @@ export default function ProductDetailView({
                 className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-4 right-4 w-10 h-10 p-0 bg-white/80 hover:bg-white/90 rounded-full shadow-sm"
-                onClick={() => onToggleFavorite?.(product.id)}
-              >
-                <Heart
-                  className={`h-5 w-5 transition-colors ${
-                    isFavorited
-                      ? "fill-red-500 text-red-500"
-                      : "text-gray-600 hover:text-red-500"
-                  }`}
-                />
-              </Button>
             </div>
 
             {/* Thumbnail Images */}

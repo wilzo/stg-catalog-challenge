@@ -34,18 +34,19 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
   switch (variant) {
     case "outline":
       variantClasses =
-        "border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-gray-900";
+        "border-2 border-gray-400 text-gray-700 bg-white hover:bg-gray-100 hover:border-gray-500 transition-all duration-200";
       break;
     case "ghost":
-      variantClasses = "text-gray-900 hover:bg-gray-100 hover:text-gray-900";
+      variantClasses =
+        "text-gray-700 bg-transparent hover:bg-gray-200 transition-all duration-200";
       break;
     case "secondary":
       variantClasses =
-        "bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900";
+        "bg-gray-200 text-gray-800 hover:bg-gray-300 transition-all duration-200";
       break;
     case "default":
       variantClasses =
-        "bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md hover:shadow-lg";
+        "bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md hover:shadow-lg transition-all duration-200";
       break;
     default:
       variantClasses = "";

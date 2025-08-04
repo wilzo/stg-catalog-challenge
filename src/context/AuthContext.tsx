@@ -12,7 +12,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
 
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       const {
         data: { session },
@@ -30,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -42,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           created_at: session.user.created_at,
         });
 
-        // Limpar localStorage quando usuário logar para evitar conflitos de ID
         if (typeof window !== "undefined") {
           localStorage.removeItem("temp_cart_items");
         }
@@ -89,12 +86,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: "invalid-password-validation-check-12345",
+      });
+
+      if (signInError?.message === "Invalid login credentials") {
+        throw new Error(
+          "Email não encontrado. Verifique se você digitou corretamente ou crie uma nova conta."
+        );
+      }
+
+      if (signInError?.message.includes("Email not confirmed")) {
+        throw new Error(
+          "Email não confirmado. Verifique sua caixa de entrada para confirmar sua conta primeiro."
+        );
+      }
+
+    } catch (validationError) {
+      if (
+        validationError instanceof Error &&
+        (validationError.message.includes("Email não encontrado") ||
+          validationError.message.includes("Email não confirmado"))
+      ) {
+        throw validationError;
+      }
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/update-password`,
+    });
+
+    if (error) {
+      throw new Error(error.message || "Erro ao enviar email de redefinição");
+    }
+  };
   const value = {
     user,
     loading,
     signIn,
     signUp,
     signOut,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

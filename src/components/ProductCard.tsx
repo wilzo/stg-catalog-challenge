@@ -36,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <Card
-      className="overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 group cursor-pointer"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 group cursor-pointer"
       onClick={() => onProductClick(product)}
     >
       <div className="relative h-48 overflow-hidden">
@@ -52,7 +52,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <div className="absolute top-3 left-3">
           <Badge
             variant="secondary"
-            className="bg-white/90 text-gray-900 text-xs font-medium"
+            className="bg-white/90 text-gray-700 text-xs"
           >
             {product.category}
           </Badge>
@@ -77,7 +77,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               onProductClick(product);
             }}
             variant="outline"
-            className="flex-1"
+            className="flex-1 font-medium border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
             icon={<Eye className="h-4 w-4" />}
           >
             <span className="hidden sm:inline">Ver Detalhes</span>
@@ -90,7 +90,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               onAddToCart(product);
             }}
             loading={isAddingToCart}
-            className="flex-1"
+            className={`flex-1 font-medium transition-all duration-200 ${
+              product.inStock
+                ? "bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-md hover:shadow-lg"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            }`}
             icon={!isAddingToCart ? <Plus className="h-4 w-4" /> : undefined}
           >
             {isAddingToCart ? (
@@ -98,11 +102,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <span className="hidden sm:inline">Adicionando...</span>
                 <span className="sm:hidden">...</span>
               </>
-            ) : (
+            ) : product.inStock ? (
               <>
                 <span className="hidden sm:inline">Adicionar</span>
                 <span className="sm:hidden">+</span>
               </>
+            ) : (
+              "Indisponível"
             )}
           </CustomButton>
         </div>

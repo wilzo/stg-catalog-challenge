@@ -8,11 +8,9 @@ import {
   MessageCircle,
   Check,
   User,
-  Mail,
   ShoppingBag,
   Truck,
   Shield,
-  AlertCircle,
   Loader2,
   Star,
 } from "lucide-react";
@@ -20,6 +18,8 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import CustomButton from "@/components/CustomButton";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { createOrder } from "@/lib/orders";
+import { clearCart as clearCartDb } from "@/lib/supabase-helpers";
 
 interface CustomerData {
   name: string;
@@ -35,7 +35,7 @@ interface AppliedCoupon {
 export default function OrderConfirmationPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { cartSummary } = useCart();
+  const { cartSummary, clearCart } = useCart();
 
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: "",
@@ -88,13 +88,11 @@ export default function OrderConfirmationPage() {
 
     if (!customerData.name.trim()) {
       newErrors.name = "Nome é obrigatório";
-    } else if (customerData.name.trim().length < 2) {
-      newErrors.name = "Nome deve ter pelo menos 2 caracteres";
     }
 
     if (!customerData.email.trim()) {
       newErrors.email = "Email é obrigatório";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(customerData.email)) {
       newErrors.email = "Email inválido";
     }
 
@@ -103,34 +101,24 @@ export default function OrderConfirmationPage() {
   };
 
   const generateWhatsAppMessage = () => {
-    const items = cartItems
-      .map(
-        (item) =>
-          `• ${item.productName} - Qtd: ${item.quantity} - ${formatPrice(
-            item.productPrice * item.quantity
-          )}`
-      )
-      .join("\n");
+    let message = `🛒 *Novo Pedido*\n\n`;
+    message += `👤 *Cliente:* ${customerData.name}\n`;
+    message += `📧 *Email:* ${customerData.email}\n\n`;
+    message += `📦 *Itens:*\n`;
 
-    const message = `🛒 *Pedido Wilson Market*
+    cartItems.forEach((item) => {
+      message += `• ${item.productName} (Qtd: ${item.quantity}) - ${formatPrice(
+        item.productPrice * item.quantity
+      )}\n`;
+    });
 
-*Cliente:*
-Nome: ${customerData.name}
-Email: ${customerData.email}
-
-*Produtos:*
-${items}
-
-*Resumo:*
-Subtotal: ${formatPrice(calculateSubtotal())}
-Frete: ${calculateShipping() === 0 ? "GRÁTIS" : formatPrice(calculateShipping())}${
-      appliedCoupon
-        ? `\nDesconto (${appliedCoupon.code}): -${formatPrice(calculateDiscount())}`
-        : ""
+    message += `\n💰 *Resumo:*\n`;
+    message += `Subtotal: ${formatPrice(calculateSubtotal())}\n`;
+    if (calculateDiscount() > 0) {
+      message += `Desconto: -${formatPrice(calculateDiscount())}\n`;
     }
-*Total: ${formatPrice(calculateTotal())}*
-
-Gostaria de finalizar este pedido! 😊`;
+    message += `Frete: ${formatPrice(calculateShipping())}\n`;
+    message += `*Total: ${formatPrice(calculateTotal())}*`;
 
     return encodeURIComponent(message);
   };
@@ -140,56 +128,127 @@ Gostaria de finalizar este pedido! 😊`;
 
     setIsConfirming(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      console.log("🛒 Dados do pedido:", {
+        customer: customerData,
+        items: cartItems,
+        totals: {
+          subtotal: calculateSubtotal(),
+          shipping: calculateShipping(),
+          discount: calculateDiscount(),
+          total: calculateTotal(),
+        },
+      });
 
-    setShowSuccess(true);
+      const orderData = {
+        customerName: customerData.name,
+        customerEmail: customerData.email,
+        items: cartItems.map((item) => {
+          const mappedItem = {
+            productId: item.productId,
+            productName: item.productName,
+            quantity: item.quantity,
+            productPrice: item.productPrice,
+          };
+          console.log("📦 Item mapeado:", mappedItem);
+          return mappedItem;
+        }),
+        totalAmount: calculateTotal(),
+      };
 
-    setTimeout(() => {
-      const message = generateWhatsAppMessage();
-      window.open(
-        `https://wa.me/5565999999999?text=${message}`,
-        "_blank"
-      );
-      router.push("/catalog");
-    }, 1500);
+      console.log("🛒 Dados completos do pedido:", orderData);
+      console.log("🛒 Itens do carrinho:", cartItems);
+
+      const result = await createOrder(orderData);
+
+      if (!result.success) {
+        console.error("Erro ao salvar pedido:", result.error);
+        alert("Erro ao salvar pedido. Tente novamente.");
+        setIsConfirming(false);
+        return;
+      }
+
+      console.log("✅ Pedido salvo com sucesso! ID:", result.orderId);
+
+      // 🔥 LIMPEZA SIMPLES E DIRETA - Nova estratégia
+      if (user?.id) {
+        console.log("🎯 LIMPANDO CARRINHO - User ID:", user.id);
+
+        // Executar limpeza sem await para não bloquear
+        clearCart()
+          .then((result) => {
+            console.log("📊 Resultado clearCart:", result);
+          })
+          .catch((error) => {
+            console.error("❌ Erro clearCart:", error);
+          });
+
+        // E também tentar direto no Supabase
+        clearCartDb(user.id)
+          .then((result) => {
+            console.log("📊 Resultado clearCartDb:", result);
+          })
+          .catch((error) => {
+            console.error("❌ Erro clearCartDb:", error);
+          });
+      }
+
+      // Delay mínimo para UX
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        const message = generateWhatsAppMessage();
+        window.open(`https://wa.me/5565999999999?text=${message}`, "_blank");
+        router.push("/catalog");
+      }, 1500);
+    } catch (error) {
+      console.error("Erro ao confirmar pedido:", error);
+      alert("Erro ao confirmar pedido. Tente novamente.");
+    } finally {
+      setIsConfirming(false);
+    }
   };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
-    router.push("/cart");
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
+        <div className="text-center">
+          <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Carrinho Vazio
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Adicione alguns produtos antes de finalizar o pedido
+          </p>
+          <CustomButton onClick={() => router.push("/catalog")}>
+            Ir às Compras
+          </CustomButton>
+        </div>
       </div>
     );
   }
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center animate-in fade-in duration-500">
-        <div className="text-center space-y-6 animate-in zoom-in duration-700">
-          <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <Check className="h-12 w-12 text-white" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-in zoom-in duration-500">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Pedido Confirmado!
             </h2>
-            <p className="text-gray-600">Redirecionando para o WhatsApp...</p>
-          </div>
-          <div className="flex justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            <p className="text-gray-600 mb-6">
+              Seu pedido foi enviado com sucesso. Você será redirecionado para o
+              WhatsApp em instantes.
+            </p>
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Redirecionando...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -197,244 +256,195 @@ Gostaria de finalizar este pedido! 😊`;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 animate-in fade-in duration-500">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <CustomButton
             variant="ghost"
             onClick={() => router.push("/cart")}
             icon={<ArrowLeft className="h-4 w-4" />}
-            className="border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 bg-transparent"
+            className="mb-4 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
           >
             Voltar ao Carrinho
           </CustomButton>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Confirmação do Pedido
-            </h1>
-            <p className="text-gray-600">Revise seus dados e finalize sua compra</p>
-          </div>
+
+          <h1 className="text-3xl font-bold text-gray-900">Finalizar Pedido</h1>
+          <p className="text-gray-600 mt-1">
+            Confirme seus dados e finalize via WhatsApp
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6 animate-in slide-in-from-left duration-700">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  Dados do Cliente
-                </h2>
+          {/* Customer Information Form */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+              <User className="h-5 w-5 mr-2 text-blue-600" />
+              Seus Dados
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome Completo *
+                </label>
+                <input
+                  type="text"
+                  value={customerData.name}
+                  onChange={(e) =>
+                    setCustomerData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                  className={`w-full px-4 py-3 border-2 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder:text-gray-500 ${
+                    errors.name
+                      ? "border-red-400 bg-red-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  placeholder="Digite seu nome completo"
+                  style={{ color: "#111827" }}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                )}
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Nome Completo *
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <input
-                      id="name"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={customerData.name}
-                      onChange={(e) =>
-                        setCustomerData({ ...customerData, name: e.target.value })
-                      }
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
-                        errors.name ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.name}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Email *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={customerData.email}
-                      onChange={(e) =>
-                        setCustomerData({ ...customerData, email: e.target.value })
-                      }
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
-                        errors.email ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={customerData.email}
+                  onChange={(e) =>
+                    setCustomerData((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
+                  className={`w-full px-4 py-3 border-2 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder:text-gray-500 ${
+                    errors.email
+                      ? "border-red-400 bg-red-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  placeholder="Digite seu email"
+                  style={{ color: "#111827" }}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <ShoppingBag className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  Resumo do Pedido
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">
-                    Subtotal ({getTotalItems()} itens)
-                  </span>
-                  <span className="font-medium">{formatPrice(calculateSubtotal())}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    <Truck className="h-4 w-4" />
-                    Frete
-                  </span>
-                  <span className="font-medium">
-                    {calculateShipping() === 0 ? (
-                      <span className="text-green-600 font-bold">GRÁTIS</span>
-                    ) : (
-                      formatPrice(calculateShipping())
-                    )}
-                  </span>
-                </div>
-
-                {appliedCoupon && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-green-600 flex items-center gap-1">
-                      <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
-                        {appliedCoupon.code}
-                      </span>
-                      Desconto
-                    </span>
-                    <span className="font-medium text-green-600">
-                      -{formatPrice(calculateDiscount())}
-                    </span>
-                  </div>
-                )}
-
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-gray-900">Total</span>
-                    <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                      {formatPrice(calculateTotal())}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Shield className="h-4 w-4 text-green-600" />
-                  <span>Compra 100% segura e protegida</span>
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div className="flex items-start">
+                <MessageCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 className="font-medium text-blue-900">
+                    Finalização via WhatsApp
+                  </h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Após confirmar, você será redirecionado para o WhatsApp com
+                    todos os detalhes do seu pedido pré-preenchidos.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="animate-in slide-in-from-right duration-700">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Star className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Seus Produtos</h2>
-              </div>
+          {/* Order Summary */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Resumo do Pedido
+            </h2>
 
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {cartItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <div className="flex-shrink-0">
-                      <div className="relative w-16 h-16 bg-white rounded-lg overflow-hidden border border-gray-200">
-                        <Image
-                          src={item.imageUrl || "/placeholder.svg"}
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded mb-1 inline-block">
-                            {item.categoryName || "Produto"}
-                          </span>
-                          <h3 className="font-medium text-gray-900 text-sm leading-tight truncate">
-                            {item.productName}
-                          </h3>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {item.quantity}x {formatPrice(item.productPrice)}
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-bold text-gray-900">
-                            {formatPrice(item.productPrice * item.quantity)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <CustomButton
-                  onClick={handleConfirmOrder}
-                  disabled={
-                    isConfirming ||
-                    !customerData.name.trim() ||
-                    !customerData.email.trim()
-                  }
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-4 h-14 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-                  icon={
-                    isConfirming ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <MessageCircle className="h-5 w-5" />
-                    )
-                  }
+            <div className="space-y-4 mb-6">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
                 >
-                  {isConfirming
-                    ? "Processando Pedido..."
-                    : "Confirmar e Enviar para WhatsApp"}
-                </CustomButton>
+                  <div className="relative w-16 h-16 bg-white rounded-lg overflow-hidden">
+                    <Image
+                      src={item.imageUrl || "/placeholder-product.png"}
+                      alt={item.productName}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">
+                      {item.productName}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Qtd: {item.quantity} × {formatPrice(item.productPrice)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">
+                      {formatPrice(item.productPrice * item.quantity)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                <p className="text-xs text-gray-500 text-center mt-3">
-                  Ao confirmar, você será redirecionado para o WhatsApp com o resumo
-                  do seu pedido
-                </p>
+            <div className="border-t pt-4 space-y-2">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span>{formatPrice(calculateSubtotal())}</span>
+              </div>
+              {calculateDiscount() > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Desconto</span>
+                  <span>-{formatPrice(calculateDiscount())}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-600">
+                <span className="flex items-center">
+                  <Truck className="h-4 w-4 mr-1" />
+                  Frete
+                </span>
+                <span>
+                  {calculateShipping() === 0
+                    ? "Grátis"
+                    : formatPrice(calculateShipping())}
+                </span>
+              </div>
+              <div className="border-t pt-2 flex justify-between text-lg font-bold text-gray-900">
+                <span>Total</span>
+                <span>{formatPrice(calculateTotal())}</span>
               </div>
             </div>
+
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center text-sm text-gray-600">
+                <Shield className="h-4 w-4 mr-2 text-green-600" />
+                Compra 100% segura e protegida
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Star className="h-4 w-4 mr-2 text-yellow-500" />
+                Atendimento personalizado via WhatsApp
+              </div>
+            </div>
+
+            <CustomButton
+              onClick={handleConfirmOrder}
+              disabled={isConfirming}
+              className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold"
+            >
+              {isConfirming ? (
+                <div className="flex items-center justify-center">
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Confirmando...
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Confirmar Pedido
+                </div>
+              )}
+            </CustomButton>
           </div>
         </div>
       </div>
