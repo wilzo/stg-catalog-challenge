@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -48,6 +48,16 @@ export default function OrderConfirmationPage() {
   const [appliedCoupon] = useState<AppliedCoupon | null>(null);
 
   const cartItems = cartSummary?.items || [];
+
+  // Preencher automaticamente os dados do usuário logado
+  useEffect(() => {
+    if (user) {
+      setCustomerData({
+        name: user.full_name || "",
+        email: user.email || "",
+      });
+    }
+  }, [user]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -301,7 +311,7 @@ export default function OrderConfirmationPage() {
                       ? "border-red-400 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
-                  placeholder="Digite seu nome completo"
+                  placeholder={user?.full_name ? "Nome preenchido automaticamente" : "Digite seu nome completo"}
                   style={{ color: "#111827" }}
                 />
                 {errors.name && (
@@ -327,7 +337,7 @@ export default function OrderConfirmationPage() {
                       ? "border-red-400 bg-red-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
-                  placeholder="Digite seu email"
+                  placeholder={user?.email ? "Email preenchido automaticamente" : "Digite seu email"}
                   style={{ color: "#111827" }}
                 />
                 {errors.email && (

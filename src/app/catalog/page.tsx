@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Check, Search, Mail, Phone, MapPin } from "lucide-react";
@@ -54,6 +54,9 @@ export default function MarketplaceCatalog() {
   const [currentPage, setCurrentPage] = useState(1);
   const PRODUCTS_PER_PAGE = 12;
 
+  // Referência para rastrear a categoria anterior
+  const prevCategoryRef = useRef<string>("all");
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -96,10 +99,16 @@ export default function MarketplaceCatalog() {
       }
     };
 
-    if (searchTerm && currentPage !== 1) {
+    // Reset da página para 1 quando há mudança nos filtros
+    if ((searchTerm && currentPage !== 1) || 
+        (selectedCategory !== prevCategoryRef.current && currentPage !== 1)) {
       setCurrentPage(1);
+      prevCategoryRef.current = selectedCategory;
       return;
     }
+
+    // Atualiza a referência da categoria anterior
+    prevCategoryRef.current = selectedCategory;
 
     loadData();
   }, [searchTerm, selectedCategory, currentPage]);
