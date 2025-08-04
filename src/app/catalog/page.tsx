@@ -52,7 +52,6 @@ export default function MarketplaceCatalog() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
   const PRODUCTS_PER_PAGE = 12;
 
   useEffect(() => {
@@ -79,11 +78,11 @@ export default function MarketplaceCatalog() {
             inStock: true,
           }));
           setProducts(convertedProducts);
-          setTotalProducts(convertedProducts.length);
         }
 
-        const { data: categoriesData, error: categoriesError } = await getUniqueProductCategories();
-        
+        const { data: categoriesData, error: categoriesError } =
+          await getUniqueProductCategories();
+
         if (categoriesError) {
           console.error("Erro ao carregar categorias:", categoriesError);
           setCategories(["Eletrônicos", "Acessórios", "Casa", "Esporte"]);
@@ -97,7 +96,6 @@ export default function MarketplaceCatalog() {
       }
     };
 
-    // Resetar página quando busca mudar
     if (searchTerm && currentPage !== 1) {
       setCurrentPage(1);
       return;
@@ -319,7 +317,6 @@ export default function MarketplaceCatalog() {
                 ))}
               </div>
 
-              {/* Paginação */}
               {getTotalPages() > 1 && (
                 <div className="animate-in slide-in-from-bottom duration-500 delay-300">
                   <Pagination

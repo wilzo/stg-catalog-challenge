@@ -6,21 +6,16 @@ import { Upload, Image as ImageIcon, Trash2 } from "lucide-react";
 import {
   uploadImageToSupabase,
   deleteImageFromSupabase,
-  updateProductImage,
   type UploadResult,
 } from "@/lib/upload-images";
 
 interface ImageUploadProps {
-  productId?: number;
-  productName?: string;
   currentImageUrl?: string;
   onUploadComplete?: (imageUrl: string) => void;
   className?: string;
 }
 
 export default function ImageUpload({
-  productId,
-  productName = "produto",
   currentImageUrl,
   onUploadComplete,
   className = "",
@@ -46,7 +41,7 @@ export default function ImageUpload({
     try {
       const result: UploadResult = await uploadImageToSupabase(
         file,
-        productName
+        "product-image"
       );
 
       if (result.error) {

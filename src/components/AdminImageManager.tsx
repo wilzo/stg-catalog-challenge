@@ -34,9 +34,6 @@ export default function AdminImageManager({
       {showUpload && (
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-white border-2 border-dashed border-blue-300 rounded-lg z-20">
           <ImageUpload
-            productId={productId}
-            productName={productName}
-            currentImageUrl={currentImageUrl}
             onUploadComplete={() => {
               onImageUpdate();
               setShowUpload(false);

@@ -1,12 +1,5 @@
 import { createClient } from "./supabase/client";
-import {
-  Database,
-  Product,
-  CartDetails,
-  Category,
-  ProductFilters,
-  CartSummary,
-} from "@/types/database";
+import { ProductFilters, CartSummary } from "@/types/database";
 
 export const supabase = createClient();
 
@@ -116,7 +109,9 @@ export async function getUniqueProductCategories() {
       return { data: [], error: error.message };
     }
 
-    const uniqueCategories = [...new Set(data?.map((item) => item.category_name))];
+    const uniqueCategories = [
+      ...new Set(data?.map((item) => item.category_name)),
+    ];
     return { data: uniqueCategories, error: null };
   } catch (error) {
     console.error("Erro ao buscar categorias únicas:", error);

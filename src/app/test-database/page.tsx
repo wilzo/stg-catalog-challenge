@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase-helpers";
 
 type Product = {
@@ -53,16 +54,17 @@ export default function TestDatabase() {
               Image URL: {product.image_url || "Sem URL"}
             </p>
             {product.image_url && (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-32 h-32 object-cover mt-2"
-                onError={(e) => {
-                  console.log("Erro ao carregar imagem:", product.image_url);
-                  e.currentTarget.src =
-                    "https://via.placeholder.com/128x128?text=Error";
-                }}
-              />
+              <div className="relative w-32 h-32 mt-2">
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    console.log("Erro ao carregar imagem:", product.image_url);
+                  }}
+                />
+              </div>
             )}
           </div>
         ))}
