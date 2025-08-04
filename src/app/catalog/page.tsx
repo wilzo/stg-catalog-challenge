@@ -100,8 +100,10 @@ export default function MarketplaceCatalog() {
     };
 
     // Reset da página para 1 quando há mudança nos filtros
-    if ((searchTerm && currentPage !== 1) || 
-        (selectedCategory !== prevCategoryRef.current && currentPage !== 1)) {
+    if (
+      (searchTerm && currentPage !== 1) ||
+      (selectedCategory !== prevCategoryRef.current && currentPage !== 1)
+    ) {
       setCurrentPage(1);
       prevCategoryRef.current = selectedCategory;
       return;
