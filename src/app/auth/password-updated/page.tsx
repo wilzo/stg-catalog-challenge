@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, ArrowLeft, Home } from "lucide-react";
@@ -13,13 +13,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function PasswordUpdatedSuccessPage() {
+function PasswordUpdatedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const message = searchParams.get("message");
 
   useEffect(() => {
-    // Auto-redirect to login after 10 seconds
     const timer = setTimeout(() => {
       router.push("/auth/login");
     }, 10000);
@@ -93,5 +92,20 @@ export default function PasswordUpdatedSuccessPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PasswordUpdatedSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <PasswordUpdatedContent />
+    </Suspense>
   );
 }
